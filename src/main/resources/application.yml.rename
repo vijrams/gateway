@@ -1,0 +1,42 @@
+server:
+  port: <port>
+  sessionTimeout: 5
+
+spring:
+  application:
+    name: EdsScheduler
+  datasource:
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    url: <mssql conn str>
+    username: <user>
+    password: <password>
+  data:
+    rest:
+      base-path: "/api"
+  jpa:
+    database: default
+    dialect : org.hibernate.dialect.SQLServer2008Dialect
+    database-platform: org.hibernate.dialect.SQLServer2008Dialect
+    show-sql: true
+    hibernate:
+      #ddl-auto: none   #make sure you uncomment this and commnet the line below after you have data in the tables
+      ddl-auto: none
+logging:
+  level:
+    ROOT: WARN
+    com.wkelms.ebilling: INFO
+    org.springframework: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  path: logs/
+  file: logs/cron_service.log
+info:
+  app:
+    name: EDS Cron Service
+    version: 1.0-SNAPSHOT
+management:
+  endpoints:
+    enabled-by-default: true
+  security:
+    enabled: false

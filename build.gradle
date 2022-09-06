@@ -1,0 +1,86 @@
+group 'com.wkelms.ebilling'
+
+apply plugin: 'groovy'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'org.springframework.boot'
+
+buildscript {
+    ext {
+        springBootVersion = '1.5.10.RELEASE'
+        springVersion = '4.3.8.RELEASE'
+    }
+    repositories {
+        mavenLocal()
+        maven{
+            url "https://nexus.wkelms.com/repository/public"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+repositories {
+    mavenLocal()
+    maven{
+        url "https://nexus.wkelms.com/repository/public"
+    }
+    mavenCentral()
+}
+
+task dist(type: Copy, dependsOn: bootRepackage) {
+	def distDir = file ('build/dist/')
+	distDir.mkdir()
+	from 'build/libs'
+	from 'src/main/resources'
+	into 'build/dist'
+    jar {
+        exclude "application.yml"
+        exclude "logback.xml"
+        exclude "data.sql"
+        exclude "db.properties"
+        exclude "JobDefinition.sql"
+        exclude "quartz.properties"
+    }
+	include "${project.name}-${project.version}.jar"
+	rename("${project.name}-${project.version}.jar","EdsScheduler-${project.version}.jar")
+}
+
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			repository(url: "https://nexus.wkelms.com/repository/cp-releases/") {
+				authentication(userName: "deployment", password: "datacert")
+			}
+			snapshotRepository(url: "https://nexus.wkelms.com/repository/cp-releases/") {
+				authentication(userName: "deployment", password: "datacert")
+			}
+			println "Uploading EdsScheduler-$version to Nexus Repo"
+			pom.version = "$version"
+			pom.artifactId = "EdsScheduler"
+			pom.groupId = "com.wkelms.ebilling.edsscheduler"
+		}
+	}
+}
+
+dependencies {
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.13'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: "${springBootVersion}"
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: "${springBootVersion}"
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: "${springBootVersion}"
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: "${springBootVersion}"
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-rest', version:"${springBootVersion}"
+    compile group: 'org.springframework', name: 'spring-context-support', version: "${springVersion}"
+    compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.2.3'
+    compile group: 'org.quartz-scheduler', name: 'quartz-jobs', version: '2.2.3'
+    compile group: 'joda-time', name: 'joda-time', version: '2.9.9'
+    compile group: 'org.mongodb', name: 'mongo-java-driver', version: '3.6.3'
+    runtime "com.microsoft:sqljdbc4:4.0"
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: "$springBootVersion"
+    testRuntime "com.h2database:h2"
+}
+
+
